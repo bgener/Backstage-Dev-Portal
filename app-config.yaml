@@ -1,0 +1,73 @@
+app:
+  title: Backstage Dev Portal
+  baseUrl: http://localhost:3000
+
+organization:
+  name: My Company
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+# Azure DevOps Integration Configuration
+integrations:
+  azure:
+    - host: dev.azure.com
+      credentials:
+        # Service Principal Authentication
+        # The clientId, clientSecret, and tenantId should be provided via environment variables:
+        # AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID
+        - clientId: ${AZURE_CLIENT_ID}
+          clientSecret: ${AZURE_CLIENT_SECRET}
+          tenantId: ${AZURE_TENANT_ID}
+
+# Azure DevOps Provider Configuration
+azureDevOps:
+  host: dev.azure.com
+  token: ${AZURE_TOKEN}
+  organization: ${AZURE_ORG}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Group, User]
+
+  locations:
+    # Local example components
+    - type: file
+      target: ../../examples/entities.yaml
+
+    # Example for Azure DevOps repositories
+    # - type: url
+    #   target: https://dev.azure.com/YOUR_ORG/YOUR_PROJECT/_git/YOUR_REPO?path=/catalog-info.yaml
+    #   rules:
+    #     - allow: [Component, System, API, Group, User, Resource, Location]
+
+  providers:
+    azureDevOps:
+      yourProviderId:
+        host: dev.azure.com
+        organization: ${AZURE_ORG}
+        project: '*'  # or specify specific projects
+
+auth:
+  environment: development
+  providers:
+    # Microsoft Authentication Provider for Azure AD
+    microsoft:
+      development:
+        clientId: ${AZURE_CLIENT_ID}
+        clientSecret: ${AZURE_CLIENT_SECRET}
+        tenantId: ${AZURE_TENANT_ID}

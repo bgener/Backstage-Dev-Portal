@@ -1,0 +1,63 @@
+---
+# Example Component with Azure DevOps annotations
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-service
+  description: An example service component with Azure DevOps integration
+  annotations:
+    # Azure DevOps annotations
+    dev.azure.com/project-repo: YOUR_PROJECT/YOUR_REPO
+    dev.azure.com/build-definition: YOUR_BUILD_DEFINITION_NAME
+
+    # Alternative annotation formats:
+    # dev.azure.com/project: YOUR_PROJECT
+    # dev.azure.com/repo-id: YOUR_REPO_ID
+    # dev.azure.com/build-definition: YOUR_BUILD_DEFINITION_ID
+
+  tags:
+    - nodejs
+    - azure-devops
+  links:
+    - url: https://dev.azure.com/YOUR_ORG/YOUR_PROJECT/_git/YOUR_REPO
+      title: Azure DevOps Repository
+      icon: dashboard
+spec:
+  type: service
+  lifecycle: production
+  owner: team-a
+  system: example-system
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: example-system
+  description: An example system
+spec:
+  owner: team-a
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-a
+  description: Team A
+spec:
+  type: team
+  profile:
+    displayName: Team A
+    email: team-a@example.com
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+  description: Guest User
+spec:
+  profile:
+    displayName: Guest User
+    email: guest@example.com
+  memberOf: [team-a]

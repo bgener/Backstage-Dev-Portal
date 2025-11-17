@@ -1,0 +1,11 @@
+{
+  "extends": "@backstage/cli/config/tsconfig.json",
+  "include": ["packages/*/src"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "app": ["packages/app/src"],
+      "backend": ["packages/backend/src"]
+    }
+  }
+}

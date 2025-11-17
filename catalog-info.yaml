@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage-dev-portal
+  description: Backstage Developer Portal with Azure DevOps Integration
+  annotations:
+    github.com/project-slug: bgener/Backstage-Dev-Portal
+  tags:
+    - backstage
+    - developer-portal
+    - azure-devops
+spec:
+  type: website
+  lifecycle: experimental
+  owner: platform-team
+  system: developer-platform
