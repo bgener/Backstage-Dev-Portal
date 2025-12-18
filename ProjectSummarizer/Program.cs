@@ -1,13 +1,53 @@
 using OllamaSharp;
 using System.Text;
 
-string sourceCodePath = Path.GetFullPath(args[0]); // or hardcode the directory path
+if (args.Length == 0)
+{
+    Console.WriteLine("Usage: dotnet run --project ProjectSummarizer -- <path-to-scan>");
+    Console.WriteLine("Example: dotnet run --project ProjectSummarizer -- .");
+    return;
+}
+
+string sourceCodePath = Path.GetFullPath(args[0]);
 Console.WriteLine($"Scanning files in {sourceCodePath}...");
 
-var projectFiles = Directory.GetFiles(sourceCodePath, "*.csproj", SearchOption.AllDirectories);
+var projectFiles = Directory.GetFiles(sourceCodePath, "*.csproj", SearchOption.AllDirectories)
+    .Where(p => !p.Contains("ProjectSummarizer")) // Exclude the CLI tool itself
+    .ToArray();
+
+if (projectFiles.Length == 0)
+{
+    Console.WriteLine("No .NET projects found to scan.");
+    return;
+}
+
+Console.WriteLine($"Found {projectFiles.Length} project(s) to analyze.\n");
 
 var uri = new Uri("http://localhost:11434");
 var ollamaApiClient = new OllamaApiClient(uri) { SelectedModel = "llama3" };
+
+// Check if Ollama is running
+try
+{
+    Console.WriteLine("Checking Ollama connection...");
+    var models = await ollamaApiClient.ListLocalModelsAsync();
+    if (!models.Any(m => m.Name.Contains("llama3")))
+    {
+        Console.WriteLine("Warning: llama3 model not found. Please run: ollama pull llama3");
+        return;
+    }
+    Console.WriteLine("✓ Connected to Ollama successfully!\n");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: Cannot connect to Ollama at {uri}");
+    Console.WriteLine("Please ensure Ollama is running:");
+    Console.WriteLine("  1. Start Ollama: ollama serve (or start the Ollama application)");
+    Console.WriteLine("  2. Pull the model: ollama pull llama3");
+    Console.WriteLine($"\nDetails: {ex.Message}");
+    return;
+}
+
 var chat = new Chat(ollamaApiClient);
 
 var catalogEntries = new List<string>();
@@ -69,7 +109,13 @@ string multiDocYaml = string.Join("\n---\n", catalogEntries);
 var rootCatalogPath = Path.Combine(sourceCodePath, "catalog-info.yaml");
 File.WriteAllText(rootCatalogPath, multiDocYaml);
 
-Console.WriteLine($"\n\nCatalog file generated at: {rootCatalogPath}");
+Console.WriteLine($"\n\n✓ Catalog file generated successfully!");
+Console.WriteLine($"  Location: {rootCatalogPath}");
+Console.WriteLine($"  Services cataloged: {catalogEntries.Count}");
+Console.WriteLine("\nNext steps:");
+Console.WriteLine("  1. Review the generated catalog-info.yaml file");
+Console.WriteLine("  2. Set up Backstage: npx @backstage/create-app");
+Console.WriteLine("  3. Register this catalog file in your Backstage instance");
 
 static void AppendFolderStructure(string rootPath, StringBuilder sb, string indent)
 {
